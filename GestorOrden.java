@@ -1,41 +1,37 @@
 package comercio;
 
 public class GestorOrden {
+    private Orden[] ordenes;
+    private int numOrdenes;
+    private static final int MAX_ORDENES = 100;
 
-    private Orden orden1, orden2;
+    public GestorOrden() {
+        this.ordenes = new Orden[MAX_ORDENES];
+        this.numOrdenes = 0;
+    }
 
-    public void encolarOrden(Orden orden){
-
-        if(this.orden1 == null){
-
-            this.orden1 = orden;
-        } else if(this.orden2 == null){
-
-            this.orden2 = orden;
+    public void encolarOrden(Orden orden) {
+        if (numOrdenes < MAX_ORDENES) {
+            ordenes[numOrdenes++] = orden;
         }
-        else {
+    }
 
-            System.out.println("No se puede gestionar mas ordenes");
-        }
+    public boolean tieneOrdenes() {
+        return numOrdenes > 0;
     }
 
     @Override
     public String toString() {
+        if (!tieneOrdenes()) {
+            return "No hay órdenes registradas";
+        }
 
-        String s1 = "Pedidos registrados: \n";
         StringBuilder sb = new StringBuilder();
-        if(orden1 != null){
-
-            sb.append(this.orden1.toString()).append("\n");
+        for (int i = 0; i < numOrdenes; i++) {
+            sb.append(String.format("%nOrden %d:%n", i + 1));
+            sb.append(ordenes[i].toString());
+            sb.append("\n----------------------------------------\n");
         }
-        if(orden2 != null){
-            sb.append(this.orden2.toString()).append("\n");
-        }
-        if(orden1 == null && orden2 == null){
-
-            return "No hay pedidos registrados";
-        }
-        String s2 = sb.toString();
-        return s1+s2;
+        return sb.toString();
     }
 }
