@@ -3,21 +3,27 @@ package comercio;
 public class ItemOrden {
 
     private Producto producto;
-    private int cantidad;//La creacion del item obliga a que al inicio no venga vacio.
+    private int cantidad; // la creacion del item obliga que al inicio no venga vacio
 
-    public ItemOrden(Producto producto, int cantidad) throws ExCantidadInvalida{
-
-        if(cantidad <= 0){
-
+    public ItemOrden(Producto producto, int cantidad) throws ExCantidadInvalida {
+        if (cantidad <= 0) {
             throw new ExCantidadInvalida("No se puede crear un item con stock negativo");
         }
 
-        if (cantidad > producto.getStock()){
-
+        if (cantidad > producto.getStock()) {
             throw new ExCantidadInvalida("No se puede crear un item de venta con una cantidad mayor a la existente");
         }
 
         this.producto = producto;
+        this.cantidad = cantidad;
+
+    }
+
+    public int getCantidad() {
+        return cantidad;
+    }
+
+    public void setCantidad(int cantidad) {
         this.cantidad = cantidad;
     }
 
@@ -29,26 +35,21 @@ public class ItemOrden {
         this.producto = producto;
     }
 
-    public int getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
-    }
-
-    public void procesarItem(){
+    public void procesarItem() {
 
         this.producto.reducirStock(this.cantidad);
     }
 
-    public double subTotalItem(){
+    public double subTotalItem() {
 
         return this.producto.getPrecioProducto() * this.cantidad;
     }
-
     @Override
     public String toString() {
-        return String.format("%s(Pr. Unitadorio %,2f). Cantidad: %d. Subtotal: %.2f",this.producto.getNombreProducto(),this.producto.getPrecioProducto(),this.cantidad);
+        return String.format("%s - Cantidad: %d - Subtotal: %.2f",
+                producto.toString(),
+                cantidad,
+                subTotalItem());
     }
 }
+

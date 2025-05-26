@@ -2,6 +2,6 @@ package comercio;
 
 public interface Descuentos {
 
-    //La firma de funcion: <tipo de devolucion> <nombre de funcion> (<parametros>)
+    //firma de funcion: <tipo de devolucion><nombreFuncion>(<parametros>)
     double aplicarDescuento(double total);
 }

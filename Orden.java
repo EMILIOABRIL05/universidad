@@ -1,7 +1,6 @@
 package comercio;
 
-public class Orden implements Descuentos, Pagos{
-
+public class Orden implements Descuentos, Pagos {
     private ItemOrden item1, item2, item3;
     private double montoPago;
     private Cliente cliente;
@@ -10,7 +9,6 @@ public class Orden implements Descuentos, Pagos{
     private final int idOrden;
 
     public Orden(Cliente cliente, Vendedor vendedor) {
-
         this.idOrden = idBase++;
         this.cliente = cliente;
         this.vendedor = vendedor;
@@ -68,105 +66,90 @@ public class Orden implements Descuentos, Pagos{
         return idOrden;
     }
 
-    public void agregarItem(Producto producto, int cantidad) throws ExCantidadInvalida{
+    public void agregarItem(Producto producto, int cantidad) throws ExCantidadInvalida {
+        if (cantidad <= 0) {
+            throw new ExCantidadInvalida("La cantidad debe ser mayor a 0");
+        }
 
-        if (item1 == null){
+        if (cantidad > producto.getStock()) {
+            throw new ExCantidadInvalida("No hay suficiente stock. Disponible: " + producto.getStock());
+        }
 
+        if (item1 == null) {
             item1 = new ItemOrden(producto, cantidad);
-        }else if (item2 == null){
+        } else if (item2 == null) {
+            if (producto.getNombreProducto().equals(item1.getProducto().getNombreProducto())) {
+                throw new ExCantidadInvalida("Producto duplicado: " + producto.getNombreProducto());
+            }
             item2 = new ItemOrden(producto, cantidad);
-            if (producto.getNombreProducto().equals(item1.getProducto().getNombreProducto())){
-
+        } else if (item3 == null) {
+            if (producto.getNombreProducto().equals(item1.getProducto().getNombreProducto()) ||
+                    producto.getNombreProducto().equals(item2.getProducto().getNombreProducto())) {
                 throw new ExCantidadInvalida("Producto duplicado: " + producto.getNombreProducto());
             }
-        }else if (item3 == null){
-
-            if (producto.getNombreProducto().equals(item1.getProducto().getNombreProducto()) || producto.getNombreProducto().equals(item2.getProducto().getNombreProducto())){
-
-                throw new ExCantidadInvalida("Producto duplicado: " + producto.getNombreProducto());
-            }
-
             item3 = new ItemOrden(producto, cantidad);
-        }else {
-            throw new ExCantidadInvalida("Solo se aceptan 3 items");
+        } else {
+            throw new ExCantidadInvalida("Solo se permiten 3 items por orden");
         }
-
     }
 
     @Override
-    public double calculoTotal(){
-
+    public double calculoTotal() {
         double total = 0;
-
-        if (item1 != null){
-
-            total += item1.subTotalItem();
-        }
-
-        if (item2 != null){
-
-            total += item2.subTotalItem();
-        }
-
-        if (item3 != null){
-
-            total += item3.subTotalItem();
-        }
-
+        if (item1 != null) total += item1.subTotalItem();
+        if (item2 != null) total += item2.subTotalItem();
+        if (item3 != null) total += item3.subTotalItem();
         return total;
     }
 
     @Override
-    public double aplicarDescuento(double total){
-
-        total *= 0.9;
-        return total;
+    public double aplicarDescuento(double total) {
+        return total * 0.9; // 10% de descuento
     }
 
     @Override
-    public void pago(double monto) throws ExPagos{
+    public void pago(double monto) throws ExPagos {
+        double totalConDescuento = aplicarDescuento(calculoTotal());
 
-        double total = aplicarDescuento(calculoTotal());
-
-        if (montoPago < total){
-
-            throw new ExPagos("El monto a pagar no es suficiente, falta: " + (total - montoPago));
+        if (monto < totalConDescuento) {
+            throw new ExPagos(String.format("El monto a pagar no es suficiente, falta: $%.2f",
+                    (totalConDescuento - monto)));
         }
+
         this.montoPago = monto;
-        if (item1 != null){
 
-            item1.procesarItem();
-        }
-
-        if (item2 != null){
-
-            item2.procesarItem();
-        }
-
-        if (item3 != null){
-
-            item3.procesarItem();
-        }
+        // Procesar los items
+        if (item1 != null) item1.procesarItem();
+        if (item2 != null) item2.procesarItem();
+        if (item3 != null) item3.procesarItem();
     }
 
     @Override
-    public String toString(){
-
+    public String toString() {
         StringBuilder sb = new StringBuilder();
-        String s = String.format("Pedido # %d.%nCliente: %s%nVendedor: %s%nItems:%n.", this.idOrden, this.cliente.getNombre(), this.vendedor.getNombre());
-        if(item1 != null){
+        sb.append(String.format("Pedido #%d%n", this.idOrden));
+        sb.append(String.format("Cliente: %s%n", this.cliente.getNombre()));
+        sb.append(String.format("Vendedor: %s%n", this.vendedor.getNombre()));
+        sb.append("Items:%n");
 
-            sb.append("- ").append(item1.toString()).append("\n");
-        }
-        if(item2 != null){
+        if (item1 != null) sb.append(String.format("- %s%n", item1.toString()));
+        if (item2 != null) sb.append(String.format("- %s%n", item2.toString()));
+        if (item3 != null) sb.append(String.format("- %s%n", item3.toString()));
 
-            sb.append("- ").append(item2.toString()).append("\n");
-        }
-        if(item3 != null){
+        double subtotal = calculoTotal();
+        double total = aplicarDescuento(subtotal);
 
-            sb.append("- ").append(item3.toString()).append("\n");
+        sb.append(String.format("Subtotal: $%.2f%n", subtotal));
+        sb.append(String.format("Descuento: $%.2f%n", subtotal - total));
+        sb.append(String.format("Total: $%.2f%n", total));
+
+        if (montoPago > 0) {
+            sb.append(String.format("Pagado: $%.2f%n", montoPago));
+            if (montoPago > total) {
+                sb.append(String.format("Cambio: $%.2f%n", montoPago - total));
+            }
         }
-        sb.append(String.format("Descuento Aplicado: %.2f", aplicarDescuento(calculoTotal())));
-        return s + sb.toString();
+
+        return sb.toString();
     }
 }
